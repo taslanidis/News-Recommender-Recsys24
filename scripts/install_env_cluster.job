@@ -19,6 +19,6 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 
 conda config --set channel_priority flexible
 
-conda create -n transformers4rec_v3
+conda create -n transformers4rec_v3 python==3.10
 
 pip install transformers4rec nvtabular ir-measures
