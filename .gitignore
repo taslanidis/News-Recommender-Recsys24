@@ -12,6 +12,14 @@ __pycache__/
 # ignore slurm out
 *.out
 
+.vscode
+
+/preprocess/trash/*
+/data_youchoose
+/categories
+/home
+/end_to_end_youchoose
+
 # Distribution / packaging
 .Python
 build/

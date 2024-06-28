@@ -1,13 +1,10 @@
-from merlin.io import Dataset
-from nvtabular import ops
-import nvtabular as nvt
-from merlin.schema.tags import Tags
-
-from merlin.schema import Schema, ColumnSchema, Tags
-
+import pandas as pd
 import polars as pl
-import numpy as np
 import pyarrow as pa
+import numpy as np
+
+import torch
+import argparse
 
 from ebrec.utils._constants import (
     DEFAULT_HISTORY_ARTICLE_ID_COL,
@@ -29,8 +26,6 @@ from ebrec.utils._behaviors import (
     add_prediction_scores,
     truncate_history,
 )
-import argparse
-
 
 from ebrec.utils._articles import convert_text2encoding_with_transformers
 from ebrec.utils._polars import concat_str_columns, slice_join_dataframes
@@ -38,125 +33,11 @@ from ebrec.utils._articles import create_article_id_to_value_mapping
 from ebrec.utils._nlp import get_transformers_word_embeddings
 from ebrec.utils._python import write_submission_file, rank_predictions_by_score
 
-from collections import OrderedDict, defaultdict
-from typing import Dict
-
-import torch
-import polars as pl
-
-import pandas as pd
-
-
-def mapper_article_to_index(row, mapper: dict, unknown: int = 0) -> list:
-    return [mapper.get(item, unknown) for item in row]
-
-
-def mapper_article_to_val(row, mapper: dict, col: str):
-    return [mapper.get(item).get(col) for item in row]
-
-
-def convert_article_id_to_index(
-    df: pl.DataFrame, mapper: dict, data_category: str
-) -> pl.DataFrame:
-
-    if data_category == "test":
-        df = df.with_columns(
-            [
-                pl.col("article_id_fixed")
-                .map_elements(
-                    lambda row: mapper_article_to_index(row, mapper),
-                    return_dtype=pl.List(pl.Int64),
-                )
-                .alias("article_id_fixed"),
-                pl.col("article_ids_inview")
-                .map_elements(
-                    lambda row: mapper_article_to_index(row, mapper),
-                    return_dtype=pl.List(pl.Int64),
-                )
-                .alias("article_ids_inview"),
-            ]
-        )
-    else:
-        df = df.with_columns(
-            [
-                pl.col("article_id_fixed")
-                .map_elements(
-                    lambda row: mapper_article_to_index(row, mapper),
-                    return_dtype=pl.List(pl.Int64),
-                )
-                .alias("article_id_fixed"),
-                pl.col("article_ids_inview")
-                .map_elements(
-                    lambda row: mapper_article_to_index(row, mapper),
-                    return_dtype=pl.List(pl.Int64),
-                )
-                .alias("article_ids_inview"),
-                pl.col("article_ids_clicked")
-                .map_elements(
-                    lambda row: mapper_article_to_index(row, mapper),
-                    return_dtype=pl.List(pl.Int64),
-                )
-                .alias("article_ids_clicked"),
-            ]
-        )
-    return df
-
-
-def construct_lookup_from_df(df_articles) -> Dict:
-    articles_dict_df = df_articles.to_dict(as_series=False)
-    articles_dict_df.keys()
-
-    columns_needed: list = [
-        'category', 'subcategory', 'article_type',
-        'sentiment_score', 'topics', 'total_pageviews'
-    ]
-
-    articles_lookup: dict = defaultdict(dict)
-
-    for col in columns_needed:
-        for article_id, val in zip(articles_dict_df['article_id'], articles_dict_df[col]):
-            articles_lookup[article_id][col] = val
-
-    for col in columns_needed:
-        if col in ['category', 'total_pageviews']:
-            articles_lookup[0][col] = 0
-        elif col in ['topics', 'subcategory']:
-            articles_lookup[0][col] = []
-        elif col in ['sentiment_score']:
-            articles_lookup[0][col] = 0.5
-        else:
-            articles_lookup[0][col] = "Unknown"
-
-    del articles_dict_df
-    
-    return articles_lookup
-
-
-def get_args_parser():
-    parser = argparse.ArgumentParser("RecSys pre-process", add_help=False)
-    parser.add_argument(
-        "--split",
-        default="small",
-        type=str,
-        metavar="taskssplit",
-        help="select small or large or testset",
-    )
-    parser.add_argument(
-        "--data_category",
-        default="train",
-        type=str,
-        metavar="cat",
-        help="train or validation or test",
-    )
-    parser.add_argument(
-        "--history_size",
-        default=20,
-        type=int,
-        metavar="hist",
-        help="select history size",
-    )
-
-    return parser
+from preprocess.utils import (
+    construct_lookup_from_df, 
+    mapper_article_to_val, 
+    convert_article_id_to_index
+)
 
 
 def main_flow(split, data_category, history_size):
@@ -170,34 +51,6 @@ def main_flow(split, data_category, history_size):
     max_samples = len(behaviors)
     file_num: int = 7
     batch: int = max_samples // 6
-
-    # Initialize an empty schema
-    schema = Schema()
-
-    article_id_fixed_col = ColumnSchema(
-        name="article_id_fixed",
-        dtype="int32",
-        tags=[Tags.LIST, Tags.CATEGORICAL, Tags.ITEM_ID, Tags.ITEM],
-        is_list=True,
-        is_ragged=True,
-    ).with_properties(
-        {"domain": {"min": 0, "max": 125541}, "value_count": {"min": 1, "max": 500}}
-    )
-
-    read_time_fixed_col = ColumnSchema(
-        name="read_time_fixed",
-        dtype="float32",
-        tags=[Tags.LIST, Tags.CONTINUOUS],
-        is_list=True,
-        is_ragged=True,
-    )
-
-    # Add columns to the schema
-    columns = [article_id_fixed_col, read_time_fixed_col]
-
-    for col in columns:
-        schema[col.name] = col
-
 
     ########################
     ### Pre-Trained Embs ###
@@ -242,6 +95,17 @@ def main_flow(split, data_category, history_size):
             "topics",
             "total_pageviews"
         )
+    )
+
+    df_articles = df_articles.with_columns(
+        pl.col("total_pageviews").fill_null(
+            pl.col("total_pageviews").median().over("category")
+        ).cast(pl.Int32)
+    )
+
+    # fill rest with zero
+    df_articles = df_articles.with_columns(
+        pl.col("total_pageviews").fill_null(0)
     )
 
     articles_lookup: dict = construct_lookup_from_df(df_articles)
@@ -450,18 +314,3 @@ def main_flow(split, data_category, history_size):
             total_df,
             f"/home/scur1565/News-Recommender-Recsys24/data/advanced_ts_ebnerd_processed/{data_category}/{data_category}_data_{split}_{i}.parquet",
         )
-
-
-if __name__ == "__main__":
-
-    args = get_args_parser()
-    args = args.parse_args()
-    print(f"Split: {args.split}")
-    print(f"Data category: {args.data_category}")
-    print(f"History size: {args.history_size}")
-
-    main_flow(
-        split=args.split,
-        data_category=args.data_category,
-        history_size=args.history_size,
-    )

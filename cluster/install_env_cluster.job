@@ -5,7 +5,7 @@
 #SBATCH --job-name=InstallEnvironment
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=18
-#SBATCH --time=04:00:00
+#SBATCH --time=00:59:00
 #SBATCH --output=out/install_environment-%A.out
 
 #exit if an error occurs
@@ -19,6 +19,11 @@ module load cuDNN/8.9.2.26-CUDA-12.1.1
 
 conda config --set channel_priority flexible
 
-conda create -n transformers4rec_v3 python==3.10
+conda create -n transformers4rec_v2_akis -c rapidsai -c conda-forge -c nvidia  \
+    rapids=24.06 python=3.10 
 
-pip install transformers4rec nvtabular ir-measures
+source activate transformers4rec_v2_akis
+
+echo Current Env: $CONDA_DEFAULT_ENV
+
+pip install transformers4rec nvtabular ir-measures numpy polars tqdm
