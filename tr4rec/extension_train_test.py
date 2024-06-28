@@ -42,7 +42,7 @@ def get_args_parser():
 
     parser.add_argument(
         "--per_device_train_batch_size",
-        default=2048,
+        default=128,
         type=int,
         metavar="train_batch",
         help="train batch size",
@@ -50,7 +50,7 @@ def get_args_parser():
 
     parser.add_argument(
         "--per_device_eval_batch_size",
-        default=2048,
+        default=128,
         type=int,
         metavar="eval_batch",
         help="eval batch size",
@@ -221,7 +221,8 @@ def pipeline(
         predictions=all_inview_scores,
         metric_functions=[AucScore(), MrrScore(), NdcgScore(k=5), NdcgScore(k=10)],
     )
-    metrics.evaluate()
+    m = metrics.evaluate()
+    print(m)
 
 
 

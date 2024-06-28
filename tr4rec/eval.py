@@ -42,7 +42,7 @@ def get_args_parser() -> argparse.ArgumentParser:
 
     parser.add_argument(
         "--path",
-        default=f"../checkpoints/enriched/small/checkpoint-339/pytorch_model.bin",
+        default=f"./checkpoints/enriched/small/checkpoint-339/pytorch_model.bin",
         type=str,
         metavar="path",
         help="The path of the model to load.",
@@ -99,7 +99,7 @@ def inference(
 
     trainer = create_trainer(
         model=model,
-        output_dir="../checkpoints/tmp",
+        output_dir="./checkpoints/tmp",
         epochs=1,
         history_size=max_sequence_length,
         per_device_train_batch_size=1,
@@ -180,13 +180,13 @@ if __name__ == "__main__":
     data_path: str = "final" if args.dataset_type == "base" else "advanced_ts"
 
     paths = [
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_0.parquet",
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_1.parquet",
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_2.parquet",
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_3.parquet",
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_4.parquet",
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_5.parquet",
-        f"../data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_6.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_0.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_1.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_2.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_3.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_4.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_5.parquet",
+        f"./data/{data_path}_ebnerd_processed/{args.data_category}/{args.data_category}_data_{args.split}_6.parquet",
     ]
     print(f"Split: {args.split} with paths: {paths}")
 

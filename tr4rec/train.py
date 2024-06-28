@@ -74,7 +74,7 @@ def main_train(
     # Initialize an empty schema
     model = create_model(max_sequence_length=history_size, d_model=64, load=False)
 
-    output_dir = f"../checkpoints/{dataset_type}/{split}"
+    output_dir = f"./checkpoints/{dataset_type}/{split}"
 
     train_args = T4RecTrainingArguments(
         data_loader_engine="merlin",
@@ -105,25 +105,25 @@ def main_train(
     data_path: str = "final" if dataset_type == "base" else "advanced_ts"
 
     train_paths = [
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_0.parquet",
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_1.parquet",
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_2.parquet",
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_3.parquet",
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_4.parquet",
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_5.parquet",
-        f"../data/{data_path}_ebnerd_processed/train/train_data_{split}_6.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_0.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_1.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_2.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_3.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_4.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_5.parquet",
+        f"./data/{data_path}_ebnerd_processed/train/train_data_{split}_6.parquet",
     ]
 
     # pick a random set from the validation lists
     eval_paths = random.sample(
         [
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_0.parquet",
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_1.parquet",
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_2.parquet",
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_3.parquet",
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_4.parquet",
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_5.parquet",
-            f"../data/{data_path}_ebnerd_processed/validation/validation_data_{split}_6.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_0.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_1.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_2.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_3.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_4.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_5.parquet",
+            f"./data/{data_path}_ebnerd_processed/validation/validation_data_{split}_6.parquet",
         ],
         k=2,
     )

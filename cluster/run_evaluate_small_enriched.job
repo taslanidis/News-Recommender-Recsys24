@@ -21,6 +21,6 @@ source activate transformers4rec_v2_akis
 
 pip install scikit-learn
 
-python tr4rec/eval.py --split small --data_category validation --save_path /home/scur1565/News-Recommender-Recsys24/results/small_output_file.parquet --path /home/scur1565/News-Recommender-Recsys24/checkpoints/enriched/small/checkpoint-34561/pytorch_model.bin --dataset_type enriched
+python tr4rec/eval.py --split small --data_category validation --path ./checkpoints/enriched/small/checkpoint-226/pytorch_model.bin --dataset_type enriched
 
 
