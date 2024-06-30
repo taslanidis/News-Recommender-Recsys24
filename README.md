@@ -10,8 +10,9 @@ This work examines and extends the Transformers4Rec library's impact in second-s
 
 1. Run `download_data.sh`
 2. Download the checkpoints from the provided link
-3. Run Inference on our trained version of Tr4Rec (~5 mins on NVIDIA A100 GPU)
-4. Train and Test our extension (~10 mins on NVIDIA A100 GPU)
+3. Run Preprocessing
+4. Run Inference on our trained version of Tr4Rec (~5 mins on NVIDIA A100 GPU)
+5. Train and Test our extension (~10 mins on NVIDIA A100 GPU)
 
 ## Pre-Trained
 
@@ -31,6 +32,11 @@ checkpoints
 
 `install_env_cluster.job` and activate with `source activate transformers4rec_v2_akis`
 
+## Data Pre-Processing
+
+`python tr4rec/pre_process.py --split small --data_category train --history_size 20 --dataset_type enriched`
+
+`python tr4rec/pre_process.py --split small --data_category validation --history_size 20 --dataset_type enriched`
 
 ## Tr4Rec Train
 
