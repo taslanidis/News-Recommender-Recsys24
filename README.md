@@ -5,6 +5,15 @@ Theofanis Aslanidis - Vasilis Karlis - Akis Lionis
 
 ## Introduction
 This work examines and extends the Transformers4Rec library's impact in second-stage recommendation problems, where the ranking of items is based not only on the user's history but also on what the user sees in its current inview. Finally, this work explores how non-sequential features such as user meta-data can be ingested in the transformers4rec library and whether such features will impact the performance.
+![Model Architecture](model_architecture.png "Model Architecture")
+
+Our contribution lies in the addition of trainable components able to capture information about the user and the inviews, respectively. We provide two model architectures: the MLP and Cross Attention models.
+
+*Attention Extension Model*. As attention layers can capture more in-depth information, we inserted attention in our architecture, as shown in the figure below. The first step is to utilize the baseline TR4REC model to encode the time series embeddings. Afterward, along with the encoded inviews, the encoded user history, and user metadata, are passed through an attention block, described by the figure below. The attention block is composed of a self-attention that takes the inview embeddings alongside a mask to counter the padding and also by cross attention that takes the inview embeddings and the baseline with user data and outputs an encoding for each inview. This way, the attention mechanism can learn the importance of each article in the inview, and provide a
+better inview representation. Lastly, to calculate the probability of clicking each inview article, we use a sequence summary of the time-series encoding, concatenated with the output of the attention block, as inputs to a two-layer MLP, with 64 nodes in the in-between layer. The MLP predicts the click probability of every inview article, achieving a size of output length of max inviews per batch, achieving the output (𝐵, 𝐿)
+
+![Cross attention](cross_attention_tr4rrec.png "Cross Attention")
+
 
 ## Reproducibility
 
